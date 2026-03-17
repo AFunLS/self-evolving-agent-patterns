@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agent Patterns Cheat Sheet — Free Download | TutuoAI</title>
+    <meta name="description" content="Free cheat sheet: 9 essential patterns for building production AI agents. Context engineering, immune systems, anti-patterns, and more. Print-friendly PDF.">
+    <link rel="canonical" href="https://afunls.github.io/self-evolving-agent-patterns/cheatsheet.html">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 60px 20px 40px;
+            background: linear-gradient(135deg, #0a0a2e 0%, #1a0a2e 50%, #0a1a2e 100%);
+            border-bottom: 1px solid #333;
+        }
+
+        .hero h1 {
+            font-size: 2.2rem;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            color: #999;
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto 20px;
+        }
+
+        .cta-btn {
+            display: inline-block;
+            padding: 14px 32px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .cheatsheet {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .cs-header {
+            background: linear-gradient(135deg, #1a1a3e, #2a1a3e);
+            padding: 24px;
+            text-align: center;
+            border-bottom: 1px solid #333;
+        }
+
+        .cs-header h2 {
+            font-size: 1.5rem;
+            color: #60a5fa;
+            margin-bottom: 4px;
+        }
+
+        .cs-header p {
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .pattern-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+        }
+
+        @media (max-width: 700px) {
+            .pattern-grid { grid-template-columns: 1fr; }
+            .hero h1 { font-size: 1.6rem; }
+        }
+
+        .pattern {
+            padding: 20px;
+            border-bottom: 1px solid #222;
+            border-right: 1px solid #222;
+        }
+
+        .pattern:nth-child(even) { border-right: none; }
+
+        .pattern-num {
+            display: inline-block;
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .pattern h3 {
+            font-size: 1rem;
+            margin-bottom: 8px;
+            color: #f0f0f0;
+        }
+
+        .pattern p {
+            font-size: 0.85rem;
+            color: #999;
+            margin-bottom: 8px;
+        }
+
+        .do-dont {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .do, .dont {
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-family: 'SF Mono', 'Menlo', monospace;
+        }
+
+        .do {
+            background: rgba(34, 197, 94, 0.08);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+        }
+
+        .dont {
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+
+        .do::before { content: '✅ '; }
+        .dont::before { content: '❌ '; }
+
+        .quick-ref {
+            padding: 24px;
+            background: #0d0d1a;
+        }
+
+        .quick-ref h3 {
+            color: #a78bfa;
+            margin-bottom: 12px;
+            font-size: 1rem;
+        }
+
+        .ref-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .ref-table th {
+            text-align: left;
+            color: #60a5fa;
+            padding: 8px;
+            border-bottom: 1px solid #333;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        .ref-table td {
+            padding: 8px;
+            border-bottom: 1px solid #1a1a1a;
+            color: #ccc;
+        }
+
+        .ref-table tr:last-child td { border-bottom: none; }
+
+        .bottom-cta {
+            text-align: center;
+            padding: 50px 20px;
+            background: linear-gradient(180deg, #0a0a0a, #0a0a2e);
+        }
+
+        .bottom-cta h2 {
+            font-size: 1.8rem;
+            margin-bottom: 12px;
+            color: #f0f0f0;
+        }
+
+        .bottom-cta p {
+            color: #888;
+            margin-bottom: 24px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .links {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+
+        .link-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border: 1px solid #444;
+            color: #ccc;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: border-color 0.2s, color 0.2s;
+        }
+
+        .link-btn:hover {
+            border-color: #60a5fa;
+            color: #60a5fa;
+        }
+
+        @media print {
+            body { background: white; color: black; }
+            .hero { background: none; border-bottom: 2px solid #ddd; }
+            .hero h1 { background: none; -webkit-text-fill-color: black; }
+            .hero p, .pattern p { color: #555; }
+            .cheatsheet { border: 2px solid #ddd; }
+            .cs-header { background: #f5f5f5; }
+            .pattern { border-color: #ddd; }
+            .do { background: #f0fff0; border-color: #4a4; color: #060; }
+            .dont { background: #fff0f0; border-color: #a44; color: #600; }
+            .cta-btn, .bottom-cta, .links { display: none; }
+            .ref-table th { color: #333; }
+            .ref-table td { color: #333; }
+            .quick-ref { background: #fafafa; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="hero">
+    <h1>🧬 AI Agent Patterns — Cheat Sheet</h1>
+    <p>9 essential patterns for building production AI agents. From a real system running 1,000+ autonomous cycles.</p>
+    <a href="javascript:window.print()" class="cta-btn">🖨️ Print / Save as PDF</a>
+</div>
+
+<div class="container">
+    <div class="cheatsheet">
+        <div class="cs-header">
+            <h2>Production AI Agent Patterns</h2>
+            <p>Extracted from JARVIS — 1,000+ cycles, 500+ self-modifications, zero catastrophic failures</p>
+        </div>
+
+        <div class="pattern-grid">
+            <div class="pattern">
+                <span class="pattern-num">PATTERN 1</span>
+                <h3>🎯 Context Engineering</h3>
+                <p>Control LLM behavior by shaping input, not parsing output. The #1 most impactful pattern.</p>
+                <div class="do-dont">
+                    <div class="do">Give structured tools (report_result with enums)</div>
+                    <div class="dont">Parse free text with regex</div>
+                </div>
+            </div>
+
+            <div class="pattern">
+                <span class="pattern-num">PATTERN 2</span>
+                <h3>🛡️ Immune System</h3>
+                <p>Every failure → documented anti-pattern → injected into context → permanent immunity.</p>
+                <div class="do-dont">
+                    <div class="do">Document failures in system prompt</div>
+                    <div class="dont">Hope the agent "learns" implicitly</div>
+                </div>
+            </div>
+
+            <div class="pattern">
+                <span class="pattern-num">PATTERN 3</span>
+                <h3>⚖️ Two-Paradigm Discipline</h3>
+                <p>Mechanical decisions → code. Semantic decisions → LLM. Behavioral changes → context.</p>
+                <div class="do-dont">
+                    <div class="do">LLM evaluates quality</div>
+                    <div class="dont">if "success" in response</div>
+                </div>
+            </div>
+
+            <div class="pattern">
+                <span class="pattern-num">PATTERN 4</span>
+                <h3>📋 Constitution</h3>
+                <p>Hard rules that can never be violated — even by the agent modifying itself.</p>
+                <div class="do-dont">
+                    <div class="do">YAML rules checked before every write</div>
+                    <div class="dont">Trust the LLM to self-constrain</div>
+                </div>
+            </div>
+
+            <div class="pattern">
+                <span class="pattern-num">PATTERN 5</span>
+                <h3>🔄 Evolution + Verification</h3>
+                <p>Self-modify → mechanical verify (syntax, tests) → adversarial review (separate LLM) → commit or revert.</p>
+                <div class="do-dont">
+                    <div class="do">Independent LLM reviews diffs</div>
+                    <div class="dont">Let agent judge its own changes</div>
+                </div>
+            </div>
+
+            <div class="pattern">
+                <span class="pattern-num">PATTERN 6</span>
+                <h3>📊 Purpose Profiles</h3>
+                <p>Different tasks need different context. A scheduler sees budget; a coder sees architecture.</p>
+                <div class="do-dont">
+                    <div class="do">Profile-based context assembly</div>
+                    <div class="dont">Same giant prompt for everything</div>
+                </div>
+            </div>
+
+            <div class="pattern">
+                <span class="pattern-num">PATTERN 7</span>
+                <h3>🏗️ Artifact-or-Nothing</h3>
+                <p>Every cycle must produce a verifiable artifact. No commit = failed cycle. No exceptions.</p>
+                <div class="do-dont">
+                    <div class="do">End cycle with git commit hash</div>
+                    <div class="dont">"Assessed situation" as success</div>
+                </div>
+            </div>
+
+            <div class="pattern">
+                <span class="pattern-num">PATTERN 8</span>
+                <h3>🔧 Tool Auto-Discovery</h3>
+                <p>Drop a tool file in the directory → it's auto-registered. No imports, no manual wiring.</p>
+                <div class="do-dont">
+                    <div class="do">Convention-based registration</div>
+                    <div class="dont">Manual tool registry editing</div>
+                </div>
+            </div>
+
+            <div class="pattern">
+                <span class="pattern-num">PATTERN 9</span>
+                <h3>💰 Budget Tracking</h3>
+                <p>Per-cycle cost tracking with auto-throttle. Without it: $180 burned in 3 hours doing nothing.</p>
+                <div class="do-dont">
+                    <div class="do">Track cost per cycle, enforce limits</div>
+                    <div class="dont">Discover costs from the API bill</div>
+                </div>
+            </div>
+
+            <div class="pattern" style="background: #0d0d1a;">
+                <span class="pattern-num" style="background: rgba(167, 139, 250, 0.15); color: #a78bfa;">BONUS</span>
+                <h3>🧠 Reward-Driven Evolution</h3>
+                <p>Track success/failure per strategy. Surface winning patterns. Suppress losing ones. The agent gets smarter over time.</p>
+                <div class="do-dont">
+                    <div class="do">Structured reward logging</div>
+                    <div class="dont">Untracked trial-and-error</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="quick-ref">
+            <h3>⚡ Quick Reference: Decision Matrix</h3>
+            <table class="ref-table">
+                <thead>
+                    <tr>
+                        <th>Decision Type</th>
+                        <th>Use</th>
+                        <th>Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>File exists? Test pass?</td>
+                        <td><strong>Code</strong></td>
+                        <td>os.path.exists(), exit_code == 0</td>
+                    </tr>
+                    <tr>
+                        <td>Is this code good?</td>
+                        <td><strong>LLM</strong></td>
+                        <td>Send diff to separate LLM instance</td>
+                    </tr>
+                    <tr>
+                        <td>Change agent behavior</td>
+                        <td><strong>Context</strong></td>
+                        <td>Edit system prompt, not add if-elif</td>
+                    </tr>
+                    <tr>
+                        <td>Collect facts</td>
+                        <td><strong>Code → LLM</strong></td>
+                        <td>Code gathers data, LLM interprets</td>
+                    </tr>
+                    <tr>
+                        <td>Parse LLM output</td>
+                        <td><strong>Don't.</strong></td>
+                        <td>Use tool calls with typed schemas</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="bottom-cta">
+    <h2>Ready to Build Production Agents?</h2>
+    <p>This cheat sheet covers the patterns. The repo has runnable code. The premium guides have the full architecture.</p>
+    <a href="https://github.com/AFunLS/self-evolving-agent-patterns" class="cta-btn">⭐ Star on GitHub</a>
+    <div class="links">
+        <a href="https://afunls.github.io/self-evolving-agent-patterns/" class="link-btn">📄 Landing Page</a>
+        <a href="https://tutuoai.com" class="link-btn">🛒 Premium Guides</a>
+        <a href="https://github.com/AFunLS/self-evolving-agent-patterns/tree/main/examples" class="link-btn">💻 Examples</a>
+    </div>
+</div>
+
+</body>
+</html>
