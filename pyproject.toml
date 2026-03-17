@@ -1,50 +1,48 @@
 [build-system]
 requires = ["setuptools>=68.0", "wheel"]
-build-backend = "setuptools.backends._legacy:_Backend"
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "agent-patterns"
 version = "0.1.0"
-description = "Battle-tested patterns for building self-evolving AI agents — from a production system with 1,000+ autonomous cycles. https://github.com/tutuoai/agent-patterns"
+description = "Battle-tested patterns for building self-evolving AI agents — from a production system with 1,000+ autonomous cycles."
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.11"
 authors = [
     {name = "TutuoAI", email = "hello@tutuoai.com"},
 ]
-keywords = ["ai", "agent", "self-evolving", "claude", "llm", "patterns"]
+keywords = [
+    "ai", "agent", "self-evolving", "llm", "claude", "autonomous",
+    "tool-use", "context-engineering", "ai-agent", "self-improving",
+]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
     "anthropic>=0.39.0",
-    "pyyaml>=6.0",
-]
-
-[project.optional-dependencies]
-dev = [
-    "pytest>=8.0",
-    "ruff>=0.5.0",
 ]
 
 [project.urls]
-Homepage = "https://github.com/tutuoai/agent-patterns"
-Documentation = "https://tutuoai.com"
+Homepage = "https://github.com/AFunLS/self-evolving-agent-patterns"
+Documentation = "https://github.com/AFunLS/self-evolving-agent-patterns#readme"
+Repository = "https://github.com/AFunLS/self-evolving-agent-patterns"
 "Premium Guides" = "https://tutuoai.com"
-"Bug Tracker" = "https://github.com/tutuoai/agent-patterns/issues"
+"Bug Tracker" = "https://github.com/AFunLS/self-evolving-agent-patterns/issues"
 
-[tool.ruff]
-target-version = "py311"
-line-length = 100
+[project.scripts]
+agent-patterns = "agent_patterns.cli:main"
 
-[tool.ruff.lint]
-select = ["E", "F", "W", "I"]
+[tool.setuptools.packages.find]
+where = ["src"]
 
-[tool.pytest.ini_options]
-testpaths = ["tests"]
+[tool.setuptools.package-data]
+agent_patterns = ["*.md", "*.yaml"]
