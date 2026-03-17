@@ -1,300 +1,103 @@
 ---
-layout: default
-title: How to Build an AI Agent with Tools — Complete Guide (2025)
-description: Step-by-step guide to building an AI agent with tool use. Real production code from a self-evolving system running 1000+ autonomous cycles.
+title: "Building AI Agent Tools That Actually Work: Lessons from 1,000+ Autonomous Cycles"
+description: "Most AI agent tutorials show toy examples. Here's what real tool use looks like after running a production agent for 1,000+ cycles."
 ---
 
-# How to Build an AI Agent with Tools — Complete Guide
+# Building AI Agent Tools That Actually Work
 
-> This guide shows you how to build an AI agent that uses tools (file operations, shell commands, web browsing) with real production patterns. Not theory — every line comes from a system that has run **1,000+ autonomous cycles** autonomously.
+> Most tutorials show `get_weather()` and call it a day. Here's what tool design actually looks like after 1,000+ autonomous agent cycles in production.
 
-## Why Most AI Agent Tutorials Are Wrong
+## The Problem Nobody Talks About
 
-Most tutorials show you:
-```python
-# ❌ The toy pattern everyone teaches
-tools = [{"name": "search", "description": "Search the web"}]
-response = client.messages.create(tools=tools, ...)
-```
+Every "build an AI agent" tutorial gives you the same toy example: a weather tool, a calculator, maybe a web search. They work great in demos. They fail in production.
 
-This works for demos. It falls apart in production because:
+Why? Because **real tools need to handle real failure modes** — timeouts, truncated output, permission errors, and the agent doing things you didn't expect.
 
-1. **No tool discovery** — tools are hardcoded, not discoverable
-2. **No error recovery** — one bad tool call crashes everything  
-3. **No learning** — the agent makes the same mistakes forever
-4. **No context management** — the agent forgets everything between turns
-
-Here's how to build it properly.
-
-## The Architecture That Actually Works
-
-```
-┌─────────────────────────────────────────┐
-│              Agent Loop                  │
-│                                          │
-│  1. Build Context (every turn!)          │
-│  2. Call LLM with tools                  │
-│  3. Execute tool calls                   │
-│  4. Record outcomes                      │
-│  5. Rebuild context → next turn          │
-│                                          │
-│  Key insight: Context is rebuilt EVERY    │
-│  turn, not just at the start.            │
-└─────────────────────────────────────────┘
-```
-
-## Step 1: The Tool Registry (Auto-Discovery)
-
-Don't hardcode your tools. Build a registry that discovers them:
+## Pattern 1: Output Truncation (Not Optional)
 
 ```python
-import importlib
-import pkgutil
-from dataclasses import dataclass
-from typing import Callable, Any
+# ❌ What tutorials show
+def run_command(command: str) -> str:
+    return subprocess.check_output(command, shell=True).decode()
 
-@dataclass
-class Tool:
-    name: str
-    description: str
-    parameters: dict  # JSON Schema
-    handler: Callable[..., Any]
-
-class ToolRegistry:
-    def __init__(self):
-        self.tools: dict[str, Tool] = {}
-    
-    def register(self, tool: Tool):
-        self.tools[tool.name] = tool
-    
-    def get_api_tools(self) -> list[dict]:
-        """Convert to Claude/OpenAI tool format."""
-        return [
-            {
-                "name": t.name,
-                "description": t.description,
-                "input_schema": t.parameters,
-            }
-            for t in self.tools.values()
-        ]
-    
-    def execute(self, name: str, args: dict) -> str:
-        """Execute a tool by name, return result as string."""
-        tool = self.tools.get(name)
-        if not tool:
-            return f"Error: Unknown tool '{name}'"
-        try:
-            result = tool.handler(**args)
-            return str(result)
-        except Exception as e:
-            return f"Error executing {name}: {e}"
-    
-    def auto_discover(self, package_path: str):
-        """Scan a directory for tool modules."""
-        for importer, name, _ in pkgutil.iter_modules([package_path]):
-            module = importlib.import_module(f"tools.{name}")
-            if hasattr(module, "register_tools"):
-                module.register_tools(self)
-```
-
-**Why this matters:** New tools are added by dropping a file in `tools/`. No imports to update, no hardcoded lists. The agent's capabilities grow without changing core code.
-
-## Step 2: Core Tools (File + Shell + Web)
-
-These three tools cover 90% of what an agent needs:
-
-```python
-import subprocess
-import httpx
-
-def register_core_tools(registry: ToolRegistry):
-    # Read files
-    registry.register(Tool(
-        name="read_file",
-        description="Read the contents of a file. Use for source code, configs, docs.",
-        parameters={
-            "type": "object",
-            "properties": {
-                "path": {"type": "string", "description": "Path to file"}
-            },
-            "required": ["path"]
-        },
-        handler=lambda path: open(path).read()
-    ))
-    
-    # Write files
-    registry.register(Tool(
-        name="write_file",
-        description="Write content to a file. Creates parent dirs if needed.",
-        parameters={
-            "type": "object",
-            "properties": {
-                "path": {"type": "string", "description": "Path to file"},
-                "content": {"type": "string", "description": "Content to write"}
-            },
-            "required": ["path", "content"]
-        },
-        handler=lambda path, content: (
-            __import__('pathlib').Path(path).parent.mkdir(parents=True, exist_ok=True),
-            __import__('pathlib').Path(path).write_text(content)
-        )[-1]
-    ))
-    
-    # Shell commands
-    registry.register(Tool(
-        name="run_command",
-        description="Execute a shell command. Use for git, pip, tests, system queries.",
-        parameters={
-            "type": "object",
-            "properties": {
-                "command": {"type": "string", "description": "Shell command to execute"}
-            },
-            "required": ["command"]
-        },
-        handler=lambda command: subprocess.run(
-            command, shell=True, capture_output=True, text=True, timeout=30
-        ).stdout[:10000] or subprocess.run(
-            command, shell=True, capture_output=True, text=True, timeout=30
-        ).stderr[:5000]
-    ))
-```
-
-## Step 3: The Agent Loop (The Key Pattern)
-
-This is where most tutorials go wrong. They build the loop wrong. Here's the pattern that works in production:
-
-```python
-import anthropic
-
-def run_agent(task: str, registry: ToolRegistry, max_turns: int = 10):
-    client = anthropic.Anthropic()
-    messages = [{"role": "user", "content": task}]
-    
-    for turn in range(max_turns):
-        # KEY PATTERN: Rebuild context every turn
-        system_prompt = build_context()  # Dynamic, not static!
-        
-        response = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=4096,
-            system=system_prompt,
-            tools=registry.get_api_tools(),
-            messages=messages,
+# ✅ What production requires
+def run_command(command: str) -> str:
+    try:
+        result = subprocess.run(
+            command, shell=True, capture_output=True,
+            text=True, timeout=30
         )
-        
-        # Check if done (no tool use)
-        if response.stop_reason == "end_turn":
-            final_text = "".join(
-                b.text for b in response.content if b.type == "text"
-            )
-            return final_text
-        
-        # Process tool calls
-        tool_results = []
-        for block in response.content:
-            if block.type == "tool_use":
-                result = registry.execute(block.name, block.input)
-                tool_results.append({
-                    "type": "tool_result",
-                    "tool_use_id": block.id,
-                    "content": result,
-                })
-                
-                # Record outcome for learning
-                record_outcome(block.name, block.input, result)
-        
-        # Add assistant response + tool results to conversation
-        messages.append({"role": "assistant", "content": response.content})
-        messages.append({"role": "user", "content": tool_results})
-    
-    return "Max turns reached"
+        output = result.stdout + result.stderr
+        if len(output) > 10000:
+            output = output[:8000] + "\n\n... [truncated] ...\n\n" + output[-2000:]
+        return output or "(no output)"
+    except subprocess.TimeoutExpired:
+        return "ERROR: Command timed out after 30s"
 ```
 
-## Step 4: Context That Improves Over Time
+Without truncation, a single `cat large_file.py` can blow your entire context window. We learned this after our agent burned $40 in tokens on a single cycle reading a minified JavaScript file.
 
-The secret sauce: your system prompt isn't static. It's rebuilt every turn with fresh information:
+## Pattern 2: Tool Descriptions Are Prompts
+
+The description you give a tool isn't just documentation — it's a **prompt** that shapes when and how the LLM uses it.
 
 ```python
-def build_context() -> str:
-    """Build dynamic context — the agent's 'perception' of the world."""
-    sections = []
-    
-    # Identity (stable)
-    sections.append(read_file("context/identity.md"))
-    
-    # Recent outcomes (dynamic — changes every turn)
-    recent = load_recent_outcomes(limit=5)
-    if recent:
-        sections.append("## Recent Outcomes\n" + format_outcomes(recent))
-    
-    # Current task state (dynamic)
-    if os.path.exists("state/current_task.md"):
-        sections.append(read_file("state/current_task.md"))
-    
-    # Failure patterns (learned from history)
-    failures = get_repeated_failures()
-    if failures:
-        sections.append(
-            "## Known Failure Patterns — Avoid These\n" + 
-            "\n".join(f"- {f}" for f in failures)
-        )
-    
-    return "\n\n---\n\n".join(sections)
+# ❌ Minimal description
+ToolDef(name="edit_file", description="Edit a file")
+
+# ✅ Behavior-shaping description
+ToolDef(
+    name="edit_file",
+    description=(
+        "Replace exact text in a file. The old_text must match exactly "
+        "(including whitespace). Use for surgical edits — changing a function, "
+        "fixing a bug. Safer than write_file for modifications because it only "
+        "changes what you specify. If old_text is not found, the edit fails."
+    )
+)
 ```
 
-**This is the most important pattern in the entire guide.** An agent that rebuilds its context every turn can learn from mistakes within a single session. An agent with a static prompt repeats the same errors forever.
+After 1,000+ cycles, the single biggest driver of correct tool selection is the **description quality**. "When to use", "vs alternatives", and "what happens on failure" are the three pieces of information that matter most.
 
-## Step 5: Outcome Recording (The Learning Loop)
+## Pattern 3: Self-Evolution Tools
+
+The most powerful pattern: let the agent modify its own behavior.
 
 ```python
-import json
-from datetime import datetime
+from agent_patterns import Agent
 
-def record_outcome(tool_name: str, args: dict, result: str):
-    """Record tool outcomes for learning."""
-    entry = {
-        "timestamp": datetime.now().isoformat(),
-        "tool": tool_name,
-        "args": args,
-        "result_preview": result[:200],
-        "success": "error" not in result.lower(),
-    }
-    with open("state/outcomes.jsonl", "a") as f:
-        f.write(json.dumps(entry) + "\n")
-
-def get_repeated_failures(threshold: int = 2) -> list[str]:
-    """Detect tools/patterns that keep failing."""
-    if not os.path.exists("state/outcomes.jsonl"):
-        return []
-    
-    failures = {}
-    for line in open("state/outcomes.jsonl"):
-        entry = json.loads(line)
-        if not entry["success"]:
-            key = f"{entry['tool']}({list(entry['args'].keys())})"
-            failures[key] = failures.get(key, 0) + 1
-    
-    return [
-        f"{k} has failed {v} times — try a different approach"
-        for k, v in failures.items() if v >= threshold
-    ]
+agent = Agent(model="claude-sonnet-4-20250514", self_evolving=True)
+agent.run("Build a calculator and learn from the experience")
 ```
 
-## Complete Working Example
+With `self_evolving=True`, the agent gets two extra tools:
+- `modify_prompt` — Append insights to its own system prompt
+- `record_result` — Log outcomes for future context injection
 
-See [minimal_agent.py](../examples/minimal_agent.py) for a complete, runnable agent that puts all these patterns together in ~150 lines.
+After several cycles, the agent's prompt accumulates real operational knowledge: "Always verify file exists before reading", "Use absolute paths for reliability", etc.
 
-## Going Further
+## Try It
 
-These patterns are extracted from a production system. The free examples cover the fundamentals. For production-grade implementations:
+```bash
+pip install anthropic
+git clone https://github.com/AFunLS/self-evolving-agent-patterns
+cd self-evolving-agent-patterns/examples
+python minimal_agent.py
+```
 
-- **[Context Engineering Deep Dive](context-engineering.md)** — The most important skill for agent builders
-- **[Two-Paradigm Architecture](two-paradigm.md)** — When to use code vs. LLM for different decisions
-- **[Immune System Patterns](immune-system.md)** — Self-diagnosis and recovery
-- **[Anti-Patterns Guide](anti-patterns.md)** — 15 mistakes that kill agents in production
+Or install the package:
+```bash
+pip install agent-patterns
+agent-patterns demo
+```
 
-For complete production frameworks with battle-tested code: visit [TutuoAI](https://tutuoai.com).
+## Full Pattern Library
 
----
+This is just one of 6+ patterns we've extracted. See the [full repository](https://github.com/AFunLS/self-evolving-agent-patterns) for:
 
-*Built by [TutuoAI](https://tutuoai.com) — Production AI Agent Engineering*
+- **Context Engineering** — The #1 most impactful pattern
+- **Immune System** — Permanent failure resistance (30% → 80% success)
+- **Anti-Pattern Catalog** — 20+ real failures with root causes
+- **Two-Paradigm Discipline** — When to use code vs LLM vs context
+
+For the complete production framework with all patterns integrated: [TutuoAI Premium Guides](https://tutuoai.com)
