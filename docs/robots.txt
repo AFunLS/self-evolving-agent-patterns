@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://afunls.github.io/self-evolving-agent-patterns/sitemap.xml
