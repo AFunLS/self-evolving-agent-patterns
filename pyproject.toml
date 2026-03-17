@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "agent-patterns"
+version = "0.1.0"
+description = "Battle-tested patterns for building self-evolving AI agents — from a production system with 1,000+ autonomous cycles. https://github.com/tutuoai/agent-patterns"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.11"
+authors = [
+    {name = "TutuoAI", email = "hello@tutuoai.com"},
+]
+keywords = ["ai", "agent", "self-evolving", "claude", "llm", "patterns"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "anthropic>=0.39.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.5.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/tutuoai/agent-patterns"
+Documentation = "https://tutuoai.com"
+"Premium Guides" = "https://tutuoai.com"
+"Bug Tracker" = "https://github.com/tutuoai/agent-patterns/issues"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,166 @@
+# Context Manifest — Profile-Based Context Assembly
+# 
+# This manifest controls WHAT your LLM agent sees in each execution context.
+# Different tasks need different context. A self-modification cycle needs code 
+# awareness; a scheduling decision needs goals and budget — not the full codebase.
+#
+# Usage: Your context builder reads this file and assembles the system prompt
+# from the specified sections, respecting priority and budget limits.
+#
+# From a production system with 1,000+ autonomous cycles.
+# Full guide: https://tutuoai.com (Context Engineering skill)
+
+# ── Generators ──────────────────────────────────────────────
+# Dynamic content computed fresh each cycle (not static files)
+generators:
+  - id: runtime_state
+    module: generators.runtime_state
+    output: state/generated/runtime-state.md
+    description: "Current system status: uptime, PID, last actions"
+    
+  - id: goals_summary
+    module: generators.goals_summary  
+    output: state/generated/goals-summary.md
+    description: "Active goals with progress and thresholds"
+    
+  - id: budget_summary
+    module: generators.budget_summary
+    output: state/generated/budget-summary.md
+    description: "Budget spent/remaining for cost awareness"
+    
+  - id: rewards_summary
+    module: generators.rewards_summary
+    output: state/generated/rewards-summary.md
+    description: "Recent cycle outcomes for learning signal"
+
+# ── Static Sections ─────────────────────────────────────────
+# Files loaded into context. Priority determines trim order (lower = dropped first)
+sections:
+  - id: soul
+    file: state/soul.md
+    priority: 100          # Never dropped — core identity
+    description: "Agent identity, purpose, thinking frameworks"
+    
+  - id: guardrails
+    file: state/guardrails.md
+    priority: 95           # Almost never dropped — behavioral rules
+    description: "Safety constraints, execution discipline"
+    
+  - id: tools
+    file: state/tools.md
+    priority: 90           # Agent needs to know its capabilities
+    description: "Available tools and when to use them"
+    
+  - id: architecture
+    file: state/architecture.md
+    priority: 70           # Important for code changes, less for simple tasks
+    description: "Self-knowledge: how the system works"
+    
+  - id: code_quality
+    file: state/code-quality.md
+    priority: 65
+    description: "Coding standards for LLM-native systems"
+    
+  - id: goals
+    file: state/generated/goals-summary.md
+    priority: 85
+    description: "What to work on (generated)"
+    
+  - id: rewards
+    file: state/generated/rewards-summary.md
+    priority: 60
+    description: "Recent outcomes for learning (generated)"
+    
+  - id: budget
+    file: state/generated/budget-summary.md
+    priority: 80
+    description: "Cost awareness (generated)"
+    
+  - id: changes
+    file: state/generated/changes-summary.md
+    priority: 50
+    description: "Recent git changes for awareness"
+
+  - id: inbox
+    file: state/generated/inbox-summary.md
+    priority: 92           # Boss messages are high priority
+    description: "Unprocessed messages from boss"
+
+# ── Purpose Profiles ────────────────────────────────────────
+# Each profile defines a VIEW of the system for a specific task type.
+# The context builder selects a profile, then assembles only those sections.
+profiles:
+  # Full context for the main orchestrator loop
+  orchestrator:
+    budget_chars: 120000
+    include: all           # Sees everything
+    
+  # Self-modification: needs code awareness + safety rules
+  evolution:
+    budget_chars: 80000
+    include:
+      - soul
+      - guardrails
+      - tools
+      - architecture
+      - code_quality
+      - goals
+      - rewards
+      - budget
+      - changes
+      
+  # Task execution: needs goals + tools, less architecture
+  goal_work:
+    budget_chars: 80000
+    include:
+      - soul
+      - guardrails
+      - tools
+      - goals
+      - rewards
+      - budget
+      - inbox
+      
+  # Scheduling: lightweight, just needs goals + budget
+  scheduling:
+    budget_chars: 40000
+    include:
+      - soul
+      - goals
+      - budget
+      - rewards
+      - inbox
+      
+  # Verification: adversarial, no soul/goals to prevent self-serving bias
+  critic:
+    budget_chars: 50000
+    include:
+      - guardrails
+      - code_quality
+      - architecture
+      - changes
+      
+  # Strategic direction
+  strategist:
+    budget_chars: 80000
+    include:
+      - soul
+      - goals
+      - budget
+      - rewards
+    role_file: roles/strategist.md
+
+  # Focused execution agent
+  actor:
+    budget_chars: 120000
+    include:
+      - soul
+      - guardrails
+      - tools
+      - architecture
+      - code_quality
+      - goals
+      - rewards
+      - budget
+      - inbox
+    role_file: roles/actor.md
