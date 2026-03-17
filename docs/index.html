@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Build Production AI Agents — Battle-Tested Patterns from 1000+ Autonomous Cycles | TutuoAI</title>
+    <meta name="description" content="Production-ready AI agent engineering frameworks extracted from a real self-evolving system running 24/7 on Claude. Context engineering, self-evolution, multi-agent orchestration, and more.">
+    <meta name="keywords" content="AI agent engineering, self-evolving AI agent, LLM agent patterns, Claude AI agent, autonomous AI agent, context engineering, prompt engineering agents, multi-agent orchestration, AI agent framework">
+    <meta name="author" content="TutuoAI">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://afunls.github.io/self-evolving-agent-patterns/">
+
+    <!-- Open Graph / Social Sharing -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://afunls.github.io/self-evolving-agent-patterns/">
+    <meta property="og:title" content="Build Production AI Agents — Battle-Tested Patterns from 1000+ Autonomous Cycles">
+    <meta property="og:description" content="Stop building toy agents. Get production frameworks from a real AI system running 24/7 autonomously. Context engineering, self-evolution, multi-agent orchestration — extracted from real code, not theory.">
+    <meta property="og:site_name" content="TutuoAI">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Build Production AI Agents — Battle-Tested Patterns">
+    <meta name="twitter:description" content="Production AI agent frameworks from a real self-evolving system. Context engineering, self-evolution, multi-agent orchestration. Works with any LLM.">
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "Build Production AI Agents — TutuoAI",
+        "description": "Production-ready AI agent engineering frameworks extracted from a real self-evolving system.",
+        "publisher": {
+            "@type": "Organization",
+            "name": "TutuoAI",
+            "url": "https://tutuoai.com"
+        }
+    }
+    </script>
+
+    <style>
+        /* ========== RESET & BASE ========== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: #1a2234;
+            --bg-card-hover: #1f2a40;
+            --bg-featured: linear-gradient(135deg, #1a1a3e 0%, #1a2234 100%);
+            --text-primary: #f0f4f8;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent: #6366f1;
+            --accent-light: #818cf8;
+            --accent-glow: rgba(99, 102, 241, 0.15);
+            --accent-green: #10b981;
+            --accent-green-glow: rgba(16, 185, 129, 0.15);
+            --accent-amber: #f59e0b;
+            --accent-amber-glow: rgba(245, 158, 11, 0.1);
+            --border: #1e293b;
+            --border-accent: #6366f1;
+            --radius: 12px;
+            --radius-lg: 16px;
+            --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.3);
+            --shadow-hover: 0 8px 40px rgba(0, 0, 0, 0.4);
+            --font-mono: 'SF Mono', 'Fira Code', 'JetBrains Mono', 'Cascadia Code', monospace;
+            --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, sans-serif;
+            --max-width: 1200px;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a { color: var(--accent-light); text-decoration: none; transition: color 0.2s; }
+        a:hover { color: var(--accent); }
+
+        .container { max-width: var(--max-width); margin: 0 auto; padding: 0 24px; }
+
+        /* ========== ANIMATIONS ========== */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px var(--accent-glow); }
+            50% { box-shadow: 0 0 40px var(--accent-glow), 0 0 60px rgba(99, 102, 241, 0.08); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        @keyframes gradient-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        .animate-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .animate-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ========== NAVIGATION ========== */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(10, 14, 23, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 0;
+            transition: all 0.3s;
+        }
+
+        nav .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-brand {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-brand .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-green) 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .nav-links { display: flex; gap: 32px; align-items: center; }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover { color: var(--text-primary); }
+
+        .nav-cta {
+            background: var(--accent) !important;
+            color: white !important;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-weight: 600 !important;
+            transition: all 0.2s !important;
+        }
+
+        .nav-cta:hover { background: var(--accent-light) !important; transform: translateY(-1px); }
+
+        /* ========== HERO ========== */
+        .hero {
+            padding: 160px 0 100px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at 50% 0%, rgba(99, 102, 241, 0.08) 0%, transparent 60%),
+                        radial-gradient(ellipse at 80% 50%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--accent-glow);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 100px;
+            padding: 8px 20px;
+            font-size: 0.85rem;
+            color: var(--accent-light);
+            font-weight: 500;
+            margin-bottom: 32px;
+            animation: fadeInUp 0.6s ease both;
+        }
+
+        .hero-badge .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            animation: pulse-glow 2s infinite;
+            box-shadow: 0 0 8px var(--accent-green);
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4.2rem);
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 24px;
+            animation: fadeInUp 0.6s ease 0.1s both;
+            letter-spacing: -0.02em;
+        }
+
+        .hero h1 .gradient-text {
+            background: linear-gradient(135deg, var(--accent-light) 0%, var(--accent-green) 50%, var(--accent-amber) 100%);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradient-shift 4s ease infinite;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1.1rem, 2.5vw, 1.35rem);
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto 20px;
+            animation: fadeInUp 0.6s ease 0.2s both;
+            line-height: 1.7;
+        }
+
+        .hero-terminal {
+            max-width: 580px;
+            margin: 40px auto;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            text-align: left;
+            animation: fadeInUp 0.6s ease 0.35s both;
+            box-shadow: var(--shadow-card);
+        }
+
+        .hero-terminal .terminal-header {
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .terminal-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .terminal-dot.red { background: #ef4444; }
+        .terminal-dot.yellow { background: #f59e0b; }
+        .terminal-dot.green { background: #10b981; }
+
+        .hero-terminal .terminal-body {
+            padding: 20px;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            line-height: 1.8;
+            color: var(--text-secondary);
+        }
+
+        .terminal-body .line { margin-bottom: 4px; }
+        .terminal-body .prompt { color: var(--accent-green); }
+        .terminal-body .command { color: var(--text-primary); }
+        .terminal-body .output { color: var(--text-muted); }
+        .terminal-body .success { color: var(--accent-green); }
+        .terminal-body .number { color: var(--accent-amber); }
+
+        .hero-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 40px;
+            animation: fadeInUp 0.6s ease 0.4s both;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 32px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.25s;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent) 0%, #4f46e5 100%);
+            color: white;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(99, 102, 241, 0.4);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent);
+            color: var(--accent-light);
+            background: var(--accent-glow);
+        }
+
+        /* ========== SOCIAL PROOF BAR ========== */
+        .proof-bar {
+            padding: 48px 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            background: rgba(17, 24, 39, 0.5);
+        }
+
+        .proof-items {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 48px;
+            flex-wrap: wrap;
+        }
+
+        .proof-item {
+            text-align: center;
+        }
+
+        .proof-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+        }
+
+        .proof-number .accent { color: var(--accent-light); }
+        .proof-number .green { color: var(--accent-green); }
+        .proof-number .amber { color: var(--accent-amber); }
+
+        .proof-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .proof-divider {
+            width: 1px;
+            height: 48px;
+            background: var(--border);
+        }
+
+        /* ========== SECTION STYLES ========== */
+        .section { padding: 100px 0; }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 64px;
+        }
+
+        .section-label {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--accent-light);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .section-title {
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            font-weight: 800;
+            margin-bottom: 16px;
+            letter-spacing: -0.02em;
+        }
+
+        .section-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* ========== PRODUCTS ========== */
+        .products-section {
+            background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-primary) 100%);
+        }
+
+        /* Featured product */
+        .product-featured {
+            background: var(--bg-featured);
+            border: 2px solid var(--accent);
+            border-radius: var(--radius-lg);
+            padding: 48px;
+            margin-bottom: 48px;
+            position: relative;
+            overflow: hidden;
+            animation: pulse-glow 4s infinite;
+        }
+
+        .product-featured::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-green), var(--accent-amber), var(--accent));
+            background-size: 300% 100%;
+            animation: gradient-shift 3s linear infinite;
+        }
+
+        .featured-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            color: var(--accent-light);
+            padding: 6px 14px;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 20px;
+        }
+
+        .featured-layout {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .featured-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .featured-description {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+            margin-bottom: 24px;
+            max-width: 550px;
+        }
+
+        .featured-includes {
+            list-style: none;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px 24px;
+            margin-bottom: 28px;
+        }
+
+        .featured-includes li {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .featured-includes li .check {
+            color: var(--accent-green);
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .featured-pricing {
+            text-align: center;
+            min-width: 220px;
+        }
+
+        .featured-pricing .original-price {
+            font-size: 1rem;
+            color: var(--text-muted);
+            text-decoration: line-through;
+            margin-bottom: 4px;
+        }
+
+        .featured-pricing .price {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .featured-pricing .price-note {
+            font-size: 0.85rem;
+            color: var(--accent-green);
+            margin-bottom: 24px;
+            font-weight: 500;
+        }
+
+        .featured-pricing .btn { width: 100%; justify-content: center; }
+
+        /* Premium product */
+        .product-premium {
+            background: var(--bg-card);
+            border: 1px solid var(--accent-amber);
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            margin-bottom: 48px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-premium::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-amber), #f97316, var(--accent-amber));
+        }
+
+        .premium-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--accent-amber-glow);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: var(--accent-amber);
+            padding: 6px 14px;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 20px;
+        }
+
+        .premium-layout {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .premium-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .premium-description {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            max-width: 550px;
+        }
+
+        .premium-includes {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 0;
+        }
+
+        .premium-includes li {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .premium-includes li .check {
+            color: var(--accent-amber);
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .premium-pricing {
+            text-align: center;
+            min-width: 200px;
+        }
+
+        .premium-pricing .price {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .premium-pricing .price-note {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+
+        .btn-amber {
+            background: linear-gradient(135deg, var(--accent-amber) 0%, #d97706 100%);
+            color: #0a0e17;
+            box-shadow: 0 4px 20px rgba(245, 158, 11, 0.25);
+        }
+
+        .btn-amber:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(245, 158, 11, 0.35);
+            color: #0a0e17;
+        }
+
+        /* Product Grid */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 24px;
+        }
+
+        .product-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 32px;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .product-card:hover {
+            border-color: rgba(99, 102, 241, 0.3);
+            background: var(--bg-card-hover);
+            box-shadow: var(--shadow-hover);
+            transform: translateY(-4px);
+        }
+
+        .product-card .product-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+        }
+
+        .product-card .product-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .product-card .product-price {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--accent-light);
+            margin-bottom: 16px;
+        }
+
+        .product-card .product-features {
+            list-style: none;
+            margin-bottom: 24px;
+            flex-grow: 1;
+        }
+
+        .product-card .product-features li {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .product-card .product-features li .check {
+            color: var(--accent-green);
+            font-weight: bold;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .product-card .btn {
+            width: 100%;
+            justify-content: center;
+            padding: 12px 24px;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--accent-light);
+            border: 1px solid var(--accent);
+        }
+
+        .btn-outline:hover {
+            background: var(--accent-glow);
+            color: var(--accent-light);
+            transform: translateY(-2px);
+        }
+
+        .icon-context { background: rgba(99, 102, 241, 0.15); }
+        .icon-evolution { background: rgba(16, 185, 129, 0.15); }
+        .icon-prompt { background: rgba(245, 158, 11, 0.15); }
+        .icon-tools { background: rgba(239, 68, 68, 0.15); }
+        .icon-memory { background: rgba(168, 85, 247, 0.15); }
+        .icon-multi { background: rgba(6, 182, 212, 0.15); }
+        .icon-budget { background: rgba(34, 197, 94, 0.15); }
+
+        /* ========== HOW IT WORKS ========== */
+        .how-section { background: var(--bg-secondary); }
+
+        .how-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+        }
+
+        .how-step {
+            text-align: center;
+            padding: 40px 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            transition: all 0.3s;
+        }
+
+        .how-step:hover {
+            border-color: rgba(99, 102, 241, 0.2);
+            transform: translateY(-4px);
+        }
+
+        .how-step .step-number {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--accent-glow);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            color: var(--accent-light);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        .how-step h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .how-step p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* ========== OPEN SOURCE ========== */
+        .oss-section {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .oss-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 48px;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 40px;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .oss-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-green), var(--accent), var(--accent-green));
+        }
+
+        .oss-card h3 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .oss-card p {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            max-width: 500px;
+        }
+
+        .oss-files {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .oss-files li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .oss-files li .file-icon { color: var(--accent-green); }
+
+        .oss-code-block {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            line-height: 1.8;
+            color: var(--text-secondary);
+            min-width: 300px;
+        }
+
+        .oss-code-block .comment { color: var(--text-muted); }
+        .oss-code-block .cmd { color: var(--accent-green); }
+
+        /* ========== FAQ ========== */
+        .faq-section { background: var(--bg-secondary); }
+
+        .faq-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 24px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px;
+            transition: border-color 0.3s;
+        }
+
+        .faq-item:hover { border-color: rgba(99, 102, 241, 0.2); }
+
+        .faq-item h3 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        .faq-item p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.7;
+        }
+
+        .faq-item .inline-code {
+            font-family: var(--font-mono);
+            background: rgba(99, 102, 241, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            color: var(--accent-light);
+        }
+
+        /* ========== CTA ========== */
+        .cta-section {
+            padding: 100px 0;
+            text-align: center;
+            position: relative;
+        }
+
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .cta-section h2 {
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+
+        .cta-section p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-bottom: 40px;
+            max-width: 550px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* ========== FOOTER ========== */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 48px 0;
+            background: var(--bg-secondary);
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 24px;
+        }
+
+        .footer-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .footer-brand .logo-icon {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-green) 100%);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .footer-brand span { font-weight: 700; font-size: 1rem; }
+
+        .footer-links { display: flex; gap: 24px; }
+
+        .footer-links a { color: var(--text-muted); font-size: 0.85rem; }
+        .footer-links a:hover { color: var(--text-secondary); }
+
+        .footer-copyright {
+            width: 100%;
+            text-align: center;
+            padding-top: 24px;
+            margin-top: 24px;
+            border-top: 1px solid var(--border);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+
+            .hero { padding: 120px 0 60px; }
+
+            .proof-items { gap: 24px; }
+            .proof-divider { display: none; }
+
+            .featured-layout,
+            .premium-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .featured-pricing,
+            .premium-pricing {
+                text-align: left;
+                min-width: auto;
+            }
+
+            .featured-includes { grid-template-columns: 1fr; }
+
+            .products-grid { grid-template-columns: 1fr; }
+
+            .how-grid { grid-template-columns: 1fr; }
+
+            .oss-card { grid-template-columns: 1fr; }
+            .oss-code-block { min-width: auto; }
+
+            .faq-grid { grid-template-columns: 1fr; }
+
+            .product-featured, .product-premium { padding: 28px; }
+
+            .hero-terminal { margin: 24px 16px; }
+
+            .footer-content { flex-direction: column; text-align: center; }
+            .footer-links { flex-wrap: wrap; justify-content: center; }
+        }
+
+        @media (max-width: 400px) {
+            .container { padding: 0 16px; }
+            .hero h1 { font-size: 2rem; }
+            .product-card { padding: 24px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== NAVIGATION ===== -->
+    <nav>
+        <div class="container">
+            <a href="https://tutuoai.com" class="nav-brand">
+                <span class="logo-icon">🤖</span>
+                TutuoAI
+            </a>
+            <div class="nav-links">
+                <a href="#products">Products</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="#open-source">Open Source</a>
+                <a href="#faq">FAQ</a>
+                <a href="#products" class="nav-cta">Get Started →</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ===== HERO ===== -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-badge">
+                <span class="pulse-dot"></span>
+                Extracted from a production system running 24/7
+            </div>
+            <h1>
+                Build <span class="gradient-text">Production AI Agents</span>
+            </h1>
+            <p class="hero-subtitle">
+                Battle-tested frameworks from 1,000+ autonomous cycles on Claude API. 
+                Not theory — real patterns from a self-evolving agent that modifies its own code, 
+                learns from outcomes, and runs without human intervention.
+            </p>
+
+            <div class="hero-terminal">
+                <div class="terminal-header">
+                    <span class="terminal-dot red"></span>
+                    <span class="terminal-dot yellow"></span>
+                    <span class="terminal-dot green"></span>
+                </div>
+                <div class="terminal-body">
+                    <div class="line"><span class="prompt">$</span> <span class="command">jarvis status</span></div>
+                    <div class="line"><span class="output">Daemon: </span><span class="success">● running</span> <span class="output">(PID 4086)</span></div>
+                    <div class="line"><span class="output">Cycles completed: </span><span class="number">1,247</span></div>
+                    <div class="line"><span class="output">Self-modifications: </span><span class="number">312</span></div>
+                    <div class="line"><span class="output">Uptime: </span><span class="number">72h</span> <span class="output">continuous</span></div>
+                    <div class="line"><span class="output">Architecture: </span><span class="success">74 modules, 290 tests</span></div>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <a href="#products" class="btn btn-primary">Browse Frameworks →</a>
+                <a href="https://github.com/afunls/self-evolving-agent-patterns" class="btn btn-secondary">
+                    ⭐ Star on GitHub
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== SOCIAL PROOF BAR ===== -->
+    <section class="proof-bar">
+        <div class="container">
+            <div class="proof-items">
+                <div class="proof-item">
+                    <div class="proof-number"><span class="accent">1,000+</span></div>
+                    <div class="proof-label">Autonomous Cycles</div>
+                </div>
+                <div class="proof-divider"></div>
+                <div class="proof-item">
+                    <div class="proof-number"><span class="green">74</span></div>
+                    <div class="proof-label">Production Modules</div>
+                </div>
+                <div class="proof-divider"></div>
+                <div class="proof-item">
+                    <div class="proof-number"><span class="amber">290</span></div>
+                    <div class="proof-label">Automated Tests</div>
+                </div>
+                <div class="proof-divider"></div>
+                <div class="proof-item">
+                    <div class="proof-number"><span class="accent">24/7</span></div>
+                    <div class="proof-label">Running on Claude</div>
+                </div>
+                <div class="proof-divider"></div>
+                <div class="proof-item">
+                    <div class="proof-number"><span class="green">9</span></div>
+                    <div class="proof-label">Deep-Dive Frameworks</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== PRODUCTS ===== -->
+    <section class="section products-section" id="products">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">// Frameworks</span>
+                <h2 class="section-title">Production-Ready Agent Patterns</h2>
+                <p class="section-subtitle">
+                    Each framework is a deep-dive guide with real code, documented anti-patterns, 
+                    and implementation checklists. Not blog posts — engineering references.
+                </p>
+            </div>
+
+            <!-- Featured: Complete Bundle -->
+            <div class="product-featured animate-in">
+                <div class="featured-badge">⭐ BEST VALUE — SAVE 45%</div>
+                <div class="featured-layout">
+                    <div>
+                        <h3 class="featured-title">Complete Agent Engineering Bundle</h3>
+                        <p class="featured-description">
+                            Everything you need to build production AI agents. All 7 frameworks 
+                            plus the complete blueprint — one purchase, zero gaps.
+                        </p>
+                        <ul class="featured-includes">
+                            <li><span class="check">✓</span> Context Engineering (9 patterns)</li>
+                            <li><span class="check">✓</span> Self-Evolution Framework (5 layers)</li>
+                            <li><span class="check">✓</span> Prompt Engineering for Agents</li>
+                            <li><span class="check">✓</span> Tool & Function Calling (13 tools)</li>
+                            <li><span class="check">✓</span> Memory & Learning System</li>
+                            <li><span class="check">✓</span> Multi-Agent Orchestration</li>
+                            <li><span class="check">✓</span> Budget-Aware Framework</li>
+                            <li><span class="check">✓</span> Future updates included</li>
+                        </ul>
+                    </div>
+                    <div class="featured-pricing">
+                        <div class="original-price">$54.93 individually</div>
+                        <div class="price">$29.99</div>
+                        <div class="price-note">Save $24.94 — best deal</div>
+                        <a href="#" class="btn btn-primary">Get the Bundle →</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Premium: Complete Blueprint -->
+            <div class="product-premium animate-in">
+                <div class="premium-badge">🔥 PREMIUM — 10,000+ WORDS</div>
+                <div class="premium-layout">
+                    <div>
+                        <h3 class="premium-title">Complete Self-Evolving Agent Blueprint</h3>
+                        <p class="premium-description">
+                            The full architecture reference. Comprehensive blueprint for building 
+                            an AI agent that modifies its own code, learns from outcomes, and compounds 
+                            capability autonomously. Includes runnable code examples.
+                        </p>
+                        <ul class="premium-includes">
+                            <li><span class="check">✓</span> Full 5-layer evolution architecture with implementation details</li>
+                            <li><span class="check">✓</span> Production safety system (constitution + immune system)</li>
+                            <li><span class="check">✓</span> Runnable minimal agent example with pyproject.toml</li>
+                        </ul>
+                    </div>
+                    <div class="premium-pricing">
+                        <div class="price">$19.99</div>
+                        <div class="price-note">Deep-dive reference guide</div>
+                        <a href="#" class="btn btn-amber">Get the Blueprint →</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Individual Products Grid -->
+            <div class="products-grid">
+
+                <!-- Context Engineering -->
+                <div class="product-card animate-in">
+                    <div class="product-icon icon-context">🧠</div>
+                    <h3 class="product-title">Context Engineering for LLM Agents</h3>
+                    <div class="product-price">$8.99</div>
+                    <ul class="product-features">
+                        <li><span class="check">✓</span> 9 named patterns for engineering LLM context environments</li>
+                        <li><span class="check">✓</span> Four-layer architecture: Identity → Behavioral → Dynamic → On-Demand</li>
+                        <li><span class="check">✓</span> YAML templates, implementation checklists, and anti-patterns</li>
+                    </ul>
+                    <a href="#" class="btn btn-outline">Buy Now →</a>
+                </div>
+
+                <!-- Self-Evolution -->
+                <div class="product-card animate-in">
+                    <div class="product-icon icon-evolution">🔄</div>
+                    <h3 class="product-title">Agent Self-Evolution Framework</h3>
+                    <div class="product-price">$7.99</div>
+                    <ul class="product-features">
+                        <li><span class="check">✓</span> 5-layer self-evolution stack (context → goals → memory → mutation → immune)</li>
+                        <li><span class="check">✓</span> Safe self-modification with constitution guardrails</li>
+                        <li><span class="check">✓</span> Reward-driven learning loops with real outcome tracking</li>
+                    </ul>
+                    <a href="#" class="btn btn-outline">Buy Now →</a>
+                </div>
+
+                <!-- Prompt Engineering -->
+                <div class="product-card animate-in">
+                    <div class="product-icon icon-prompt">⚡</div>
+                    <h3 class="product-title">Prompt Engineering for Agent Systems</h3>
+                    <div class="product-price">$6.99</div>
+                    <ul class="product-features">
+                        <li><span class="check">✓</span> Agent-specific prompt patterns (beyond chatbot techniques)</li>
+                        <li><span class="check">✓</span> Two-paradigm discipline: when to use code vs. LLM judgment</li>
+                        <li><span class="check">✓</span> Anti-sycophancy, epistemic cleanliness, and thinking frameworks</li>
+                    </ul>
+                    <a href="#" class="btn btn-outline">Buy Now →</a>
+                </div>
+
+                <!-- Tool & Function Calling -->
+                <div class="product-card animate-in">
+                    <div class="product-icon icon-tools">🔧</div>
+                    <h3 class="product-title">Tool & Function Calling Mastery</h3>
+                    <div class="product-price">$5.99</div>
+                    <ul class="product-features">
+                        <li><span class="check">✓</span> 13 production tool implementations (file, web, shell, browser)</li>
+                        <li><span class="check">✓</span> Auto-discovery registry pattern for plug-and-play tools</li>
+                        <li><span class="check">✓</span> Safety gates, timeout management, and output truncation</li>
+                    </ul>
+                    <a href="#" class="btn btn-outline">Buy Now →</a>
+                </div>
+
+                <!-- Memory & Learning -->
+                <div class="product-card animate-in">
+                    <div class="product-icon icon-memory">💾</div>
+                    <h3 class="product-title">Agent Memory & Learning System</h3>
+                    <div class="product-price">$4.99</div>
+                    <ul class="product-features">
+                        <li><span class="check">✓</span> 5 memory patterns — episodic, semantic, procedural, reward, action</li>
+                        <li><span class="check">✓</span> TF-IDF similarity search — no vector DB or external ML required</li>
+                        <li><span class="check">✓</span> Auto-consolidation, failure detection, and strategy ranking</li>
+                    </ul>
+                    <a href="#" class="btn btn-outline">Buy Now →</a>
+                </div>
+
+                <!-- Multi-Agent -->
+                <div class="product-card animate-in">
+                    <div class="product-icon icon-multi">🌐</div>
+                    <h3 class="product-title">Multi-Agent Orchestration Patterns</h3>
+                    <div class="product-price">$4.99</div>
+                    <ul class="product-features">
+                        <li><span class="check">✓</span> LLM-driven orchestration — no hardcoded pipelines</li>
+                        <li><span class="check">✓</span> Role-based agents: Actor, Critic, Strategist, Reviewer</li>
+                        <li><span class="check">✓</span> Context profiles per role — each agent sees what it needs</li>
+                    </ul>
+                    <a href="#" class="btn btn-outline">Buy Now →</a>
+                </div>
+
+                <!-- Budget-Aware -->
+                <div class="product-card animate-in">
+                    <div class="product-icon icon-budget">💰</div>
+                    <h3 class="product-title">Budget-Aware Agent Framework</h3>
+                    <div class="product-price">$2.99</div>
+                    <ul class="product-features">
+                        <li><span class="check">✓</span> Real-time cost tracking per cycle, per tool, per model</li>
+                        <li><span class="check">✓</span> Throttle and sleep thresholds to prevent budget blowout</li>
+                        <li><span class="check">✓</span> ROI analysis — measure value produced per dollar spent</li>
+                    </ul>
+                    <a href="#" class="btn btn-outline">Buy Now →</a>
+                </div>
+
+            </div><!-- /products-grid -->
+        </div>
+    </section>
+
+    <!-- ===== HOW IT WORKS ===== -->
+    <section class="section how-section" id="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">// How It Works</span>
+                <h2 class="section-title">From Purchase to Production</h2>
+                <p class="section-subtitle">
+                    Each framework is a standalone engineering reference. Use them individually 
+                    or combine them to build a complete agent system.
+                </p>
+            </div>
+
+            <div class="how-grid">
+                <div class="how-step animate-in">
+                    <div class="step-number">1</div>
+                    <h3>Pick Your Framework</h3>
+                    <p>Start with one pattern — context engineering is the highest-leverage starting point — or grab the complete bundle for the full system.</p>
+                </div>
+                <div class="how-step animate-in">
+                    <div class="step-number">2</div>
+                    <h3>Implement the Patterns</h3>
+                    <p>Follow the implementation checklists and code examples. Each framework includes Python code, YAML configs, and documented anti-patterns to avoid.</p>
+                </div>
+                <div class="how-step animate-in">
+                    <div class="step-number">3</div>
+                    <h3>Ship Your Agent</h3>
+                    <p>Deploy to production with confidence. These patterns are proven across 1,000+ cycles — the failure modes are already documented and solved.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== OPEN SOURCE ===== -->
+    <section class="section oss-section" id="open-source">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">// Open Source</span>
+                <h2 class="section-title">Free Patterns on GitHub</h2>
+                <p class="section-subtitle">
+                    Start with free community patterns. Go deeper with premium frameworks.
+                </p>
+            </div>
+
+            <div class="oss-card animate-in">
+                <div>
+                    <h3>Self-Evolving Agent Patterns</h3>
+                    <p>
+                        Open-source documentation of the core patterns that power the JARVIS system. 
+                        Free forever — contribute, fork, and build on them.
+                    </p>
+                    <ul class="oss-files">
+                        <li><span class="file-icon">📄</span> docs/two-paradigm.md — Code vs LLM decision framework</li>
+                        <li><span class="file-icon">📄</span> docs/context-engineering.md — Context architecture overview</li>
+                        <li><span class="file-icon">📄</span> docs/immune-system.md — Drift detection patterns</li>
+                        <li><span class="file-icon">📄</span> docs/anti-patterns.md — Real failures and their fixes</li>
+                        <li><span class="file-icon">📄</span> examples/ — Runnable minimal agent example</li>
+                    </ul>
+                </div>
+                <div class="oss-code-block">
+                    <div><span class="comment"># Clone and explore</span></div>
+                    <div><span class="cmd">$ git clone</span> github.com/afunls/</div>
+                    <div>&nbsp;&nbsp;self-evolving-agent-patterns</div>
+                    <div>&nbsp;</div>
+                    <div><span class="cmd">$ cd</span> self-evolving-agent-patterns</div>
+                    <div><span class="cmd">$ ls</span> docs/</div>
+                    <div>two-paradigm.md</div>
+                    <div>context-engineering.md</div>
+                    <div>immune-system.md</div>
+                    <div>anti-patterns.md</div>
+                    <div>&nbsp;</div>
+                    <div><span class="comment"># ⭐ Star if useful!</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FAQ ===== -->
+    <section class="section faq-section" id="faq">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">// FAQ</span>
+                <h2 class="section-title">Common Questions</h2>
+            </div>
+
+            <div class="faq-grid">
+                <div class="faq-item animate-in">
+                    <h3>Is this just theory?</h3>
+                    <p>
+                        No. Every pattern is extracted from a real production system — JARVIS — 
+                        that runs 24/7 on Claude's API, autonomously modifying its own code and 
+                        learning from outcomes. The anti-patterns are real bugs. The solutions are 
+                        battle-tested fixes. You'll find commit hashes, cycle counts, and dollar 
+                        costs throughout — because this is engineering, not speculation.
+                    </p>
+                </div>
+
+                <div class="faq-item animate-in">
+                    <h3>What LLM model does this work with?</h3>
+                    <p>
+                        The system was built on <span class="inline-code">Claude Opus</span>, 
+                        but the architectural patterns — context engineering, self-evolution, 
+                        multi-agent orchestration — work with any sufficiently capable LLM. 
+                        GPT-4, Gemini, Llama, Qwen — the frameworks are model-agnostic. 
+                        The key insight is architecture, not model choice.
+                    </p>
+                </div>
+
+                <div class="faq-item animate-in">
+                    <h3>Do I need prior AI agent experience?</h3>
+                    <p>
+                        Intermediate developer knowledge is assumed — you should be comfortable 
+                        with Python, APIs, and basic system architecture. You don't need prior 
+                        experience building AI agents specifically. The frameworks start from 
+                        fundamentals and build to advanced patterns.
+                    </p>
+                </div>
+
+                <div class="faq-item animate-in">
+                    <h3>What format are the frameworks?</h3>
+                    <p>
+                        Comprehensive Markdown documents with inline Python code examples, 
+                        YAML configuration templates, architecture diagrams (ASCII), implementation 
+                        checklists, and documented anti-patterns. Designed to be engineering 
+                        references you keep open while building.
+                    </p>
+                </div>
+
+                <div class="faq-item animate-in">
+                    <h3>Can I get a refund?</h3>
+                    <p>
+                        Yes. If the frameworks don't help you build better agents, 
+                        contact us within 30 days for a full refund. No questions asked.
+                    </p>
+                </div>
+
+                <div class="faq-item animate-in">
+                    <h3>What's the difference between free and paid?</h3>
+                    <p>
+                        The free GitHub patterns give you the conceptual overview — enough to understand 
+                        the approach. The paid frameworks go deep: full implementation details, production 
+                        code, edge cases, configuration templates, and the specific anti-patterns that 
+                        cost us $180+ in wasted cycles to discover.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FINAL CTA ===== -->
+    <section class="cta-section">
+        <div class="container">
+            <h2>Stop Building Toy Agents</h2>
+            <p>
+                Get the complete toolkit used to build a real production AI system. 
+                Frameworks, patterns, and code — everything you need in one bundle.
+            </p>
+            <div class="hero-actions">
+                <a href="#products" class="btn btn-primary" style="font-size: 1.1rem; padding: 16px 40px;">
+                    Get the Complete Bundle — $29.99 →
+                </a>
+            </div>
+            <p style="margin-top: 20px; font-size: 0.85rem; color: var(--text-muted);">
+                45% off individual prices · Instant download · 30-day refund guarantee
+            </p>
+        </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <span class="logo-icon">🤖</span>
+                    <span>TutuoAI</span>
+                </div>
+                <div class="footer-links">
+                    <a href="https://tutuoai.com">tutuoai.com</a>
+                    <a href="https://github.com/afunls/self-evolving-agent-patterns">GitHub</a>
+                    <a href="#products">Products</a>
+                    <a href="#faq">FAQ</a>
+                </div>
+                <div class="footer-copyright">
+                    © 2025 TutuoAI. All rights reserved. Built with an AI that builds itself.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ===== SCROLL ANIMATION ===== -->
+    <script>
+        // Intersection Observer for scroll animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        });
+
+        document.querySelectorAll('.animate-in').forEach(el => observer.observe(el));
+
+        // Smooth scroll for nav links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Nav background on scroll
+        const nav = document.querySelector('nav');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                nav.style.borderBottomColor = 'rgba(99, 102, 241, 0.1)';
+            } else {
+                nav.style.borderBottomColor = 'var(--border)';
+            }
+        });
+    </script>
+
+</body>
+</html>
